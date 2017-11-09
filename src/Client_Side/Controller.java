@@ -1,5 +1,8 @@
 package Client_Side;
 
+import java.io.IOException;
+import java.net.Socket;
+
 public class Controller implements ModelListener, ViewListener {
 
 	private Model model;
@@ -16,12 +19,18 @@ public class Controller implements ModelListener, ViewListener {
 	@Override
 	public void onNicknameChanged(String newNickname) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onMessageSent(String message) {
-System.out.println(message);		
+		System.out.println(message);		
+		
+		try {
+			Socket s = new Socket("127.0.0.1", 500);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+System.out.println("Impossible de se connecter");		}
 	}
 
 	@Override
