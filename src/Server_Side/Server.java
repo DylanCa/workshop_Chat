@@ -25,9 +25,19 @@ public class Server implements Runnable {
 
 		this.acceptThread = new Thread(this);
 		this.acceptThread.start();
-		
+
 		this.connectedClients = new ArrayList<>();
 
+	}
+
+	public void onClientMessageReceived(Client c, String message) {
+		System.out.println("[Server][" + c.getSocket().getInetAddress() + "] Received message: " + message);
+		c.write("ECHO -> " + message);
+
+	}
+
+	public void onClientDisconnected(Client c) {
+		System.out.println("[Server][" + c.getSocket().getInetAddress() + "] is now disconnected.");
 	}
 
 	@Override
@@ -38,7 +48,10 @@ public class Server implements Runnable {
 
 				System.out.println("Connection received from " + s.getInetAddress());
 
-				Client c = new Client(s);
+				Client c = new Client(s, this);
+
+				c.startPollingThread();
+
 				this.connectedClients.add(c);
 
 			} catch (IOException e) {
