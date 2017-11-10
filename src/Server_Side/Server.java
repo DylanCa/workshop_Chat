@@ -32,12 +32,40 @@ public class Server implements Runnable {
 
 	public void onClientMessageReceived(Client c, String message) {
 		System.out.println("[Server][" + c.getSocket().getInetAddress() + "] Received message: " + message);
-		c.write("ECHO -> " + message);
 
+		broadcastMessage(c, message);
 	}
 
 	public void onClientDisconnected(Client c) {
 		System.out.println("[Server][" + c.getSocket().getInetAddress() + "] is now disconnected.");
+
+		synchronized (this.connectedClients) {
+			this.connectedClients.remove(c);
+		}
+	}
+
+	private void broadcastMessage(Client c, String message) {
+		String data = "MSG;";
+		data += c.getNickname();
+		data += ";";
+		data += (long) (System.currentTimeMillis() / 1000);
+		data += ";";
+		data += c.getSocket().getInetAddress();
+		data += ";";
+		data += message;
+		broadcast(data);
+	}
+
+	private void broadcast(String data) {
+		ArrayList<Client> copyConnectedClients;
+		
+		synchronized (this.connectedClients) {
+
+			copyConnectedClients = new ArrayList<>(this.connectedClients);
+		}
+		for (Client client : copyConnectedClients) {
+			client.write(data);
+		}
 	}
 
 	@Override
@@ -52,7 +80,9 @@ public class Server implements Runnable {
 
 				c.startPollingThread();
 
-				this.connectedClients.add(c);
+				synchronized (this.connectedClients) {
+					this.connectedClients.add(c);
+				}
 
 			} catch (IOException e) {
 				System.out.println("Connection error");

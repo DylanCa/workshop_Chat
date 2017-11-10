@@ -13,6 +13,7 @@ public class Client implements Runnable {
 	private BufferedReader in;
 	private Thread thread;
 	private Server server;
+	private String nickname = "Anonymous";
 
 	public Client(Socket socket, Server server) throws IOException {
 		this.socket = socket;
@@ -86,6 +87,10 @@ public class Client implements Runnable {
 
 			return false;
 		}
+	}
+
+	public String getNickname() {
+		return this.nickname ;
 	}
 
 }
