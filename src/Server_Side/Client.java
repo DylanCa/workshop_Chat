@@ -44,13 +44,13 @@ public class Client implements Runnable {
 				message = this.in.readLine();
 
 				if (message == null) {
-					
+
 					close();
 					return;
 				}
-				
+
 				this.server.onClientMessageReceived(this, message);
-				
+
 			} catch (IOException e) {
 
 				System.err.println("[Server][" + socket.getInetAddress() + "] Error while receiving message");
@@ -78,7 +78,6 @@ public class Client implements Runnable {
 			this.in.close();
 			this.out.close();
 			this.socket.close();
-			
 
 			return true;
 
@@ -90,7 +89,11 @@ public class Client implements Runnable {
 	}
 
 	public String getNickname() {
-		return this.nickname ;
+		return this.nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
 	}
 
 }

@@ -31,9 +31,30 @@ public class Server implements Runnable {
 	}
 
 	public void onClientMessageReceived(Client c, String message) {
-		System.out.println("[Server][" + c.getSocket().getInetAddress() + "] Received message: " + message);
 
-		broadcastMessage(c, message);
+		if (message.length() < 3) {
+			System.out.println("[ERROR] Invalid raw data");
+			return;
+		}
+
+		String opcode = message.substring(0, 3);
+
+		switch (opcode) {
+		case "MSG;":
+
+			System.out.println("[Server][" + c.getSocket().getInetAddress() + "] Received message: " + message);
+			broadcastMessage(c, message);
+			break;
+
+		case "NCK;":
+			c.setNickname(message.substring(4));
+			System.out.println("Nickname changed: " + message.substring(4) );
+			break;
+
+		default:
+			System.out.println("[ERROR] Invalid raw data");
+			break;
+		}
 	}
 
 	public void onClientDisconnected(Client c) {
@@ -58,7 +79,7 @@ public class Server implements Runnable {
 
 	private void broadcast(String data) {
 		ArrayList<Client> copyConnectedClients;
-		
+
 		synchronized (this.connectedClients) {
 
 			copyConnectedClients = new ArrayList<>(this.connectedClients);

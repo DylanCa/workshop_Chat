@@ -33,9 +33,8 @@ public class Controller implements ModelListener, ViewListener {
 			PrintWriter out = new PrintWriter(s.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
+			out.println("NCK; PseudoChanged");
 			out.println(message);
-			
-			System.out.println(in.readLine());
 			
 //			out.close();
 //			 s.close();
