@@ -9,7 +9,14 @@ public class Model {
 	private String nickname;
 	private String cypherMethod;
 	private String serverAddress;
-	
+
+	public Model() {
+
+		this.connectedUsers = new ArrayList<>();
+		this.listeners = new ArrayList<>();
+
+	}
+
 	public String getNickname() {
 		return nickname;
 	}
@@ -39,11 +46,11 @@ public class Model {
 	}
 
 	public void addConnectedUsers(String username) {
-		this.connectedUsers .add(username);
+		this.connectedUsers.add(username);
 	}
-	
+
 	public void removeConnectedUsers(String username) {
-		this.connectedUsers .remove(username);
+		this.connectedUsers.remove(username);
 	}
 
 	public List<ModelListener> getListeners() {
@@ -56,13 +63,6 @@ public class Model {
 
 	private List<String> connectedUsers;
 	private List<ModelListener> listeners;
-
-	public Model() {
-
-		this.connectedUsers = new ArrayList<>();
-		this.listeners = new ArrayList<>();
-
-	}
 
 	public void addListener(ModelListener listener) {
 		this.listeners.add(listener);

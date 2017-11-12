@@ -8,5 +8,6 @@ public interface ViewListener {
 	
 	public void onCypherMethodChanged(String method);
 	
+	public void onClientAppExit();
 	
 }

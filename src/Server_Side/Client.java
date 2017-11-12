@@ -5,6 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
 
 public class Client implements Runnable {
 
@@ -13,9 +19,23 @@ public class Client implements Runnable {
 	private BufferedReader in;
 	private Thread thread;
 	private Server server;
+	private KeyGenerator keyGen;
+	private Key key;
+	private Cipher cipher;
 	private String nickname = "Anonymous";
 
 	public Client(Socket socket, Server server) throws IOException {
+		try {
+
+			this.keyGen = KeyGenerator.getInstance("AES");
+			keyGen.init(128);
+			key = keyGen.generateKey();
+			cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		this.socket = socket;
 		this.server = server;
 
@@ -43,15 +63,16 @@ public class Client implements Runnable {
 			try {
 				message = this.in.readLine();
 
+				cipher.init(Cipher.DECRYPT_MODE, key, cipher.getParameters());
+
 				if (message == null) {
 
 					close();
 					return;
 				}
-
 				this.server.onClientMessageReceived(this, message);
 
-			} catch (IOException e) {
+			} catch (Exception e) {
 
 				System.err.println("[Server][" + socket.getInetAddress() + "] Error while receiving message");
 			}
@@ -61,29 +82,11 @@ public class Client implements Runnable {
 	public boolean write(String message) {
 
 		try {
-			this.out.println(message);
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			this.out.println(cipher.doFinal(message.getBytes()));
 			return true;
 
 		} catch (Exception e) {
-			return false;
-		}
-
-	}
-
-	private boolean close() {
-
-		try {
-			this.server.onClientDisconnected(this);
-			this.thread.interrupt();
-			this.in.close();
-			this.out.close();
-			this.socket.close();
-
-			return true;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-
 			return false;
 		}
 	}
@@ -94,6 +97,24 @@ public class Client implements Runnable {
 
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	public boolean close() {
+		try {
+
+			this.server.onClientDisconnected(this);
+			this.thread.interrupt();
+			this.socket.close();
+			this.in.close();
+			this.out.close();
+
+			return true;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			return false;
+		}
 	}
 
 }

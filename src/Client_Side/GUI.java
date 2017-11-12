@@ -1,30 +1,29 @@
 package Client_Side;
 
-import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultCaret;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JButton;
-import java.awt.FlowLayout;
 import java.awt.Color;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
+import javax.swing.ScrollPaneConstants;
 
 public class GUI extends JFrame {
 
@@ -34,9 +33,11 @@ public class GUI extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField messageField;
-	private JTextField txtBob;
-	private List<String> connectedUsers;
+	private JTextField fieldNickname;
 	private List<ViewListener> listeners;
+
+	public JTextArea messageArea;
+	public JTextArea clientArea;
 
 	/**
 	 * Create the frame.
@@ -44,10 +45,9 @@ public class GUI extends JFrame {
 
 	public GUI() {
 
-		this.connectedUsers = new ArrayList<>();
 		this.listeners = new ArrayList<>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1402, 819);
+		setBounds(100, 100, 817, 452);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -57,30 +57,7 @@ public class GUI extends JFrame {
 		JPanel textPanel = new JPanel();
 		textPanel.setBackground(Color.PINK);
 
-		JPanel editPanel = new JPanel();
-		editPanel.setBackground(Color.GRAY);
-
 		JPanel clientPanel = new JPanel();
-		GroupLayout gl_mainPanel = new GroupLayout(mainPanel);
-		gl_mainPanel.setHorizontalGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mainPanel.createSequentialGroup().addContainerGap()
-						.addGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_mainPanel.createSequentialGroup()
-										.addComponent(textPanel, GroupLayout.DEFAULT_SIZE, 1138, Short.MAX_VALUE)
-										.addPreferredGap(ComponentPlacement.RELATED)
-										.addComponent(clientPanel, GroupLayout.PREFERRED_SIZE, 205,
-												GroupLayout.PREFERRED_SIZE)
-										.addGap(11))
-								.addGroup(gl_mainPanel.createSequentialGroup()
-										.addComponent(editPanel, GroupLayout.DEFAULT_SIZE, 1350, Short.MAX_VALUE)
-										.addContainerGap()))));
-		gl_mainPanel.setVerticalGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mainPanel.createSequentialGroup().addContainerGap()
-						.addGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
-								.addComponent(textPanel, GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
-								.addComponent(clientPanel, GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE))
-						.addGap(15).addComponent(editPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)));
 
 		messageField = new JTextField();
 		messageField.setColumns(10);
@@ -94,47 +71,86 @@ public class GUI extends JFrame {
 				messageField.setText("");
 			}
 		});
+		GroupLayout gl_mainPanel = new GroupLayout(mainPanel);
+		gl_mainPanel.setHorizontalGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_mainPanel.createSequentialGroup().addContainerGap()
+						.addGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
+								.addComponent(textPanel, GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
+								.addComponent(messageField, GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(clientPanel, GroupLayout.PREFERRED_SIZE, 205, GroupLayout.PREFERRED_SIZE)
+						.addGap(17)));
+		gl_mainPanel.setVerticalGroup(gl_mainPanel.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_mainPanel.createSequentialGroup().addContainerGap()
+						.addGroup(gl_mainPanel.createParallelGroup(Alignment.TRAILING)
+								.addComponent(clientPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE,
+										GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addGroup(gl_mainPanel.createSequentialGroup()
+										.addComponent(textPanel, GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+										.addPreferredGap(ComponentPlacement.RELATED).addComponent(messageField,
+												GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)))
+						.addGap(9)));
 
-		GroupLayout gl_editPanel = new GroupLayout(editPanel);
-		gl_editPanel.setHorizontalGroup(gl_editPanel.createParallelGroup(Alignment.LEADING).addComponent(messageField,
-				GroupLayout.DEFAULT_SIZE, 1350, Short.MAX_VALUE));
-		gl_editPanel.setVerticalGroup(gl_editPanel.createParallelGroup(Alignment.LEADING).addComponent(messageField,
-				Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE));
-		editPanel.setLayout(gl_editPanel);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+
+				notifyEvent("onClientAppExit");
+			}
+		});
 
 		JScrollPane scrollPane = new JScrollPane();
 
 		JComboBox dropdownMenu = new JComboBox();
 
-		txtBob = new JTextField();
-		txtBob.setHorizontalAlignment(SwingConstants.CENTER);
-		txtBob.setText("Bob");
-		txtBob.setColumns(10);
+		fieldNickname = new JTextField();
+		fieldNickname.setFont(new Font("Tahoma", Font.PLAIN, 17));
+		fieldNickname.setHorizontalAlignment(SwingConstants.CENTER);
+		fieldNickname.setText("Anonymous");
+		fieldNickname.setColumns(10);
+
+		fieldNickname.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String nick = fieldNickname.getText();
+				notifyEvent("onNicknameChanged", nick);
+				messageField.grabFocus();
+			}
+		});
+
 		GroupLayout gl_clientPanel = new GroupLayout(clientPanel);
 		gl_clientPanel.setHorizontalGroup(gl_clientPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_clientPanel.createSequentialGroup().addContainerGap()
 						.addGroup(gl_clientPanel.createParallelGroup(Alignment.LEADING)
-								.addComponent(txtBob, GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
 								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-								.addComponent(dropdownMenu, 0, 195, Short.MAX_VALUE))));
+								.addComponent(fieldNickname, GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+								.addComponent(dropdownMenu, Alignment.TRAILING, 0, 195, Short.MAX_VALUE))));
 		gl_clientPanel.setVerticalGroup(gl_clientPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_clientPanel.createSequentialGroup()
-						.addComponent(txtBob, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 568, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED, 25, Short.MAX_VALUE).addComponent(dropdownMenu,
+						.addComponent(fieldNickname, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+						.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(dropdownMenu,
 								GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addContainerGap()));
 
-		JTextArea clientArea = new JTextArea();
+		clientArea = new JTextArea();
 		clientArea.setEditable(false);
 		scrollPane.setViewportView(clientArea);
 		clientPanel.setLayout(gl_clientPanel);
 
 		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane_1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-		JTextArea messageArea = new JTextArea();
+		messageArea = new JTextArea();
+		messageArea.setLineWrap(true);
 		messageArea.setEditable(false);
+
+		DefaultCaret caret = (DefaultCaret) messageArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
 		scrollPane_1.setViewportView(messageArea);
 		GroupLayout gl_textPanel = new GroupLayout(textPanel);
 		gl_textPanel.setHorizontalGroup(gl_textPanel.createParallelGroup(Alignment.LEADING).addComponent(scrollPane_1,
@@ -149,8 +165,8 @@ public class GUI extends JFrame {
 						.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGap(3)));
 		gl_contentPane.setVerticalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_contentPane.createSequentialGroup().addGap(5).addComponent(mainPanel,
-						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+				.addGroup(gl_contentPane.createSequentialGroup().addGap(5)
+						.addComponent(mainPanel, GroupLayout.PREFERRED_SIZE, 398, Short.MAX_VALUE).addContainerGap()));
 		contentPane.setLayout(gl_contentPane);
 	}
 
